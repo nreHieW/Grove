@@ -8,6 +8,8 @@ class BaseEntry:
 
     def __init__(self, data: np.array, metadata: Dict[str, object] = None) -> None:
         self.data = np.float32(data)
+        if not isinstance(metadata, dict):
+            raise ValueError(f"Metadata must be a dictionary, got {type(metadata)}")
         self.metadata = metadata
 
     def __str__(self) -> str:

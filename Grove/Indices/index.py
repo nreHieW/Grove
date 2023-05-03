@@ -3,7 +3,7 @@ from typing import List, Tuple, Dict
 import numpy as np
 import pickle
 import gc
-from Entry.baseentry import BaseEntry
+from Grove.Entry.baseentry import BaseEntry
 
 class Index(ABC):
     
@@ -11,7 +11,7 @@ class Index(ABC):
     key: np.array
 
     @abstractmethod
-    def search(self, query, k = 5) -> Tuple[List[BaseEntry], np.array]:
+    def search(self, query, k = 5) -> Tuple[str, List[List[BaseEntry]], np.array]:
         pass
 
     @abstractmethod
@@ -56,7 +56,7 @@ class InnerIndex(Index):
             raise ValueError(f"Location must not be empty")
         else:
             loc_list = loc.split("-")
-            child_name = loc_list[0].strip().lower()
+            child_name = loc_list[0].strip()
             if len(loc_list) == 1:
                 if child_name not in self.children:
                     raise ValueError(f"Child {child_name} does not exist")
@@ -95,7 +95,7 @@ class InnerIndex(Index):
             del self.children[child_name]
         
     @abstractmethod
-    def search(self, query: np.array, k: int = 5) -> Tuple[List[BaseEntry], np.array]:
+    def search(self, query: np.array, k: int = 5) -> Tuple[str, List[List[BaseEntry]], np.array]:
         pass
     
     def create_child_level(self, names: List[str], t: Index, keys: List[np.array] = None, **kwargs) -> None:
@@ -138,12 +138,15 @@ class RootIndex(InnerIndex):
     def load_from_disk(cls, name: str) -> "RootIndex":
         with open(f"{name}.pkl", "rb") as f:
             return pickle.load(f)
+        
+        
+        
 
     
 class LeafIndex(SearchableIndex):
 
     @abstractmethod
-    def search(self, query: np.array, k: int = 5) -> Tuple[List[BaseEntry], np.array]:
+    def search(self, query: np.array, k: int = 5) -> Tuple[str, List[List[BaseEntry]], np.array]:
         """Returns a list of k nearest neighbors and their distances to the query point"""
         pass
 
@@ -158,7 +161,7 @@ class LeafIndex(SearchableIndex):
         pass
 
     @abstractmethod
-    def delete(self, item: int) -> None:
+    def delete(self, metadata: dict) -> None:
         """Deletes a vector from the index"""
         pass
 
