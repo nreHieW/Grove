@@ -39,7 +39,7 @@ There are 2 types of Inner Indices - `FlatInnerIndex` and `SVMInnerIndex`. They 
 
 ### Leaf Indices
 Leaf Indices are where the actual searching takes place. There are currently 3 different variants: `FlatLeafIndex`, `HNSWLeafIndex` and `FlatLeafIndex`. They contain the following methods:
-1. `search(self, query: np.array, k: int = 5) -> Tuple[str, List[List[BaseEntry]], np.array]: -> None` searches for the top k data points with the given `query`. Returns a tuple of (location of the leaf node the results are from, a `Q` x `K` list of results, a `Q` x `K` np.array of distances). 
+1. `search(self, query: np.array, k: int = 5) -> Tuple[str, List[BaseEntry], np.array]: -> None` searches for the top k data points with the given `query`. Returns a tuple of (location of the leaf node the results are from, a `Q` x `K` list of results, a `Q` x `K` np.array of distances). 
 2. `insert(self, item: BaseEntry, loc: str = None) -> None:` inserts a `BaseEntry` into the specified location of the database.
 3. `insert_all(self, items: List[BaseEntry], loc: str) -> None:` inserts a list of `BaseEntries` into the specified location. This is the same as calling `insert()` on each item of the list.
 4. `delete(self, metadata: dict, loc: str) -> None:` deletes the item given a metadata. If `BaseEntry` is provided for metadata, delete the associated entry in the database.
@@ -59,16 +59,20 @@ DIM = 768
 root = FlatRootIndex("root", max_children=10) # Create database
 
 # Create SVM leaf index at current level with 100 max elements 
-root.create_child("child1", SVMLeafIndex, max_children=100, loc="", key = np.float32(np.random.rand(DIM)), dim = DIM)
+root.create_child("child1", SVMLeafIndex, max_children=100, loc="", 
+                                        key = np.float32(np.random.rand(DIM)), dim = DIM)
 
 # Create flat inner index at current level with 10 max children leaf indices
-root.create_child("child2", FlatInnerIndex, max_children=10, loc = "", key = np.float32(np.random.rand(DIM)))
+root.create_child("child2", FlatInnerIndex, max_children=10, loc = "", 
+                                        key = np.float32(np.random.rand(DIM)))
 
 # Create HNSW leaf index one level lower at child2 with 100 max elements
 root.create_child("child2a", HNSWLeafIndex, max_children=100, loc = "child2", key = np.float32(np.random.rand(DIM)), dim = DIM)
 
-root.insert_all([BaseEntry(np.float32(np.random.rand(DIM)), metadata= {}) for i in range(100)], "child1") # insert into child 1
-root.insert_all([BaseEntry(np.float32(np.random.rand(DIM)), metadata= {}) for i in range(100)], "child2-child2a") # insert into child 2a
+root.insert_all([BaseEntry(np.float32(np.random.rand(DIM)), 
+                            metadata= {}) for i in range(100)], "child1") # insert into child 1
+root.insert_all([BaseEntry(np.float32(np.random.rand(DIM)), 
+                            metadata= {}) for i in range(100)], "child2-child2a") # insert into child 2a
 
 print(root.get_schema())
 # FlatRootIndex(name = root, num_children = 2)
