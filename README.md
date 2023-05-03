@@ -1,10 +1,10 @@
 # Grove
-`Grove` is a tree-based hierarchical implementation of the Hierarchical Navigable Small World vector search algorithm (see here[https://github.com/nmslib/hnswlib]). Grove supports sub-indices that allows for searches across the sub-indices. 
+`Grove` is a tree-based hierarchical implementation of the Hierarchical Navigable Small World vector search algorithm [see here](https://github.com/nmslib/hnswlib). Grove supports sub-indices that allows for searches across the sub-indices. 
 
 Currently, it supports 3 different searching algorithms 
 - Hierarchical Navigable Small World (HNSW) search for the leaf indices which contain the actual data points
 - Flat Search conducts a KNN search to find the top k nearest neighbours. Only supported by sub indices.
-- SVM Search is an implementation of Karparthy's notebook[https://github.com/karpathy/randomfun/blob/master/knn_vs_svm.ipynb]. Only supported by sub indices.
+- SVM Search is an implementation of [Karparthy's notebook](https://github.com/karpathy/randomfun/blob/master/knn_vs_svm.ipynb). Only supported by sub indices.
 
 
 
