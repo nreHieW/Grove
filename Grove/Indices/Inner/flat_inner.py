@@ -19,12 +19,12 @@ class FlatInnerIndex(InnerIndex, SearchableIndex):
 
     def __init__(self, name: str, max_children: int, key: np.array = None) -> None:
         self.name = name
-        self.key = self.key
+        self.key = key
         self.searchable = self.key is not None
         self.max_children = max_children
         self.children = dict()
 
-    def search(self, query: np.array, k: int = 5) -> Tuple[str, List[List[BaseEntry]], np.array]:
+    def search(self, query: np.array, k: int = 5) -> Tuple[str, List[BaseEntry], np.array]:
         """Returns a list of k nearest neighbors and their distances to the query point"""
         
         if not self.is_searchable():
@@ -38,9 +38,9 @@ class FlatInnerIndex(InnerIndex, SearchableIndex):
         y = np.array([v.key for k, v in self.children.items()], dtype=object)
         similarities = y.dot(query)
         sorted_ix = np.argpartition(-similarities, kth=0)[:1] 
-        best_index = sorted_ix[1] - 1 
+        best_index = sorted_ix[0]
         best_child = list(self.children.keys())[best_index]
-        recursive_res = self.children[list(self.children.keys())[best_child]].search(query, k)
+        recursive_res = self.children[best_child].search(query, k)
         path = best_child + "-" + recursive_res[0]
         return path, recursive_res[1], recursive_res[2]
     

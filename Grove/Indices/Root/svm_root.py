@@ -1,37 +1,21 @@
-from typing import Dict, List, Tuple
 import numpy as np
+from typing import List, Tuple, Dict
 from sklearn import svm
-import logging
-from Grove.Indices.index import Index, InnerIndex, SearchableIndex
+from Grove.Indices.index import RootIndex
 from Grove.Entry.baseentry import BaseEntry
 
-class SVMInnerIndex(InnerIndex, SearchableIndex):
-    """
-    SVMInnerIndex is an inner node of the collection. It's children is a list of Indices. 
-    It is recommended to use this index if the number of children is less than 1000.
-    It uses SVM to search for the nearest neighbors.
-    """
-
+class SVMRootIndex(RootIndex):
+    
     name: str
-    key: np.array
-    children: Dict[str, Index]
-    max_children: int
+    children: Dict
 
-    def __init__(self, name: str, max_children: int, key: np.array = None) -> None:
+    def __init__(self, name: str, max_children: int) -> None:
         self.name = name
-        self.key = key
-        self.searchable = key is not None
-        self.max_children = max_children
-        if max_children > 1000:
-            logging.warning(f"Max children is {max_children} but recommended to be less than 1000")
-
         self.children = dict()
+        self.max_children = max_children
 
-    def search(self, query: np.array, k: int = 5)-> Tuple[str, List[List[BaseEntry]], np.array]:
+    def search(self, query: np.array, k: int = 5) -> Tuple[str, List[BaseEntry], np.array]:
         """Returns a list of k nearest neighbors and their distances to the query point"""
-                
-        if not self.is_searchable():
-            raise ValueError(f"Index is not searchable, add key first")
         
         if len(self.children) == 0:
             raise ValueError(f"Index is empty, add children first")
@@ -51,11 +35,13 @@ class SVMInnerIndex(InnerIndex, SearchableIndex):
         zero_index = np.where(sorted_ix == 0)[0][0]
         if zero_index != 0:
             sorted_ix[0], sorted_ix[zero_index] = sorted_ix[zero_index], sorted_ix[0]
-        best_index = sorted_ix[0]
+        best_index = sorted_ix[1] - 1
         best_child = list(self.children.keys())[best_index]
         recursive_res = self.children[best_child].search(query, k)
         path = best_child + "-" + recursive_res[0]
         return path, recursive_res[1], recursive_res[2]
-
+        
+    
     def __str__(self) -> str:
-        return f"SVMInnerIndex(name={self.name}, num_children={len(self)}, searchable = {self.is_searchable()})"
+        return f"SVMRootIndex(name = {self.name}, num_children = {len(self)})"
+    

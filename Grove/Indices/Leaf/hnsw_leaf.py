@@ -45,7 +45,7 @@ class HNSWLeafIndex(LeafIndex):
         self.m = m
         self.index.init_index(max_elements = max_children, ef_construction = ef_construction, M = m, allow_replace_deleted = True)
 
-    def search(self, query: np.array, k: int = 5) -> Tuple[str, List[List[BaseEntry]], np.array]:
+    def search(self, query: np.array, k: int = 5) -> Tuple[str, List[BaseEntry], np.array]:
         """Returns a list of k nearest neighbors and their distances to the query point"""
         if not self.is_searchable():
             raise ValueError(f"Index is not searchable, set key first")
@@ -58,18 +58,16 @@ class HNSWLeafIndex(LeafIndex):
         query = np.float32(query)
         labels, distances = self.index.knn_query(query, k)
 
-        res = []
-        for label in labels:
-            query_res = []
-            items = self.index.get_items(label)
-            for i in range(len(items)):
-                content = self.labels_mapping.get(label[i])
-                if "id" not in content:
-                    content["id"] = label[i]
-                query_res.append(BaseEntry(np.array(items[i]), metadata = content))
-            res.append(query_res)
+        label = labels[0]
+        query_res = []
+        items = self.index.get_items(label)
+        for i in range(len(items)):
+            content = self.labels_mapping.get(label[i])
+            if "id" not in content:
+                content["id"] = label[i]
+            query_res.append(BaseEntry(np.array(items[i]), metadata = content))
 
-        return "", res, distances
+        return "", query_res, distances
 
     def insert(self, item: BaseEntry, loc: str) -> None:
         """Inserts a new vector into the index"""
@@ -101,7 +99,11 @@ class HNSWLeafIndex(LeafIndex):
                 self.curr_count += 1
         self.index.add_items(np.array([item.data for item in items]), ids = np.asarray(int_labels), replace_deleted = True)
 
-    def delete(self, metadata: dict) -> None:
+    def delete(self, metadata: dict, loc: str) -> None:
+        if loc != "":
+            raise ValueError(f"Location is {loc} but expected leaf")
+        if isinstance(metadata, BaseEntry):
+            metadata = metadata.metadata
         for label, m in self.labels_mapping.items():
             if m == metadata:
                 del self.labels_mapping[label]
@@ -115,8 +117,8 @@ class HNSWLeafIndex(LeafIndex):
         self.labels_mapping = dict()
 
 
-    def get_ids(self) -> dict:
-        return self.labels_mapping
+    def get_ids(self) -> List[dict]:
+        return list(self.labels_mapping.values())
 
     def __len__(self) -> int:
         """Returns the number of vectors in the index"""

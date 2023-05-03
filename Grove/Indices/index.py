@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple, Dict
 import numpy as np
 import pickle
-import gc
 from Grove.Entry.baseentry import BaseEntry
 
 class Index(ABC):
@@ -52,8 +51,8 @@ class InnerIndex(Index):
 
     def insert(self, item: BaseEntry, loc: str) -> None:
         """Inserts a new vector into the index"""
-        if not loc or (len(loc) == 0):
-            raise ValueError(f"Location must not be empty")
+        if not loc:
+            raise ValueError(f"Location must be provided. Provide empty string for current index")
         else:
             loc_list = loc.split("-")
             child_name = loc_list[0].strip()
@@ -74,40 +73,71 @@ class InnerIndex(Index):
             self.insert(item, loc)
 
         
-    def create_child(self, child_name, t:Index, **kwargs) -> None: # TODO: if child_name already exists?
+    def create_child(self, new_child_name, t:Index, loc: str, **kwargs) -> None:
         """Inserts a new child index into the index"""
         if len(self.children) >= self.max_children:
             raise ValueError(f"Index is full with count {self.max_children}. Cannot insert more elements")
         
-        if child_name in self.children:
-            raise ValueError(f"Child {child_name} already exists")
-        
-        self.children[child_name] = t(name = child_name, **kwargs)
+        if loc == "":
+            if new_child_name in self.children:
+                raise ValueError(f"Child {new_child_name} already exists")
+            self.children[new_child_name] = t(name = new_child_name, **kwargs)
+        else: 
+            loc_list = loc.split("-")
+            child_name = loc_list[0].strip()
+            if child_name not in self.children:
+                raise ValueError(f"Child {child_name} does not exist")
+            else:
+                self.children[child_name].create_child(new_child_name, t, "-".join(loc_list[1:]), **kwargs)
 
-    def delete_child(self, child_name: str) -> None:
+    def delete_child(self, loc: str) -> None:
         """Deletes a child index from the index"""
-        if child_name not in self.children:
-            raise ValueError(f"Child {child_name} does not exist")
+        child_name = loc.split("-")[0].strip()
+        if loc == "":
+            if child_name not in self.children:
+                raise ValueError(f"Child {child_name} does not exist")
+            else:
+                del self.children[child_name]
         else:
-            referrers = gc.get_referrers(self.children[child_name])
-            for referrer in referrers:
-                print(type(referrer), referrer)
-            del self.children[child_name]
+            loc_list = loc.split("-")
+            if child_name not in self.children:
+                raise ValueError(f"Child {child_name} does not exist")
+            else:
+                self.children[child_name].delete_child("-".join(loc_list[1:]))
+    
+    def delete(self, metadata: BaseEntry, loc: str) -> None:
+        if loc == "":
+            raise ValueError(f"Can only delete data points at leaf level")
+        else:
+            loc_list = loc.split("-")
+            child_name = loc_list[0].strip()
+            if child_name not in self.children:
+                raise ValueError(f"Child {child_name} does not exist")
+            else:
+                self.children[child_name].delete(metadata, "-".join(loc_list[1:]))
         
     @abstractmethod
     def search(self, query: np.array, k: int = 5) -> Tuple[str, List[List[BaseEntry]], np.array]:
         pass
     
-    def create_child_level(self, names: List[str], t: Index, keys: List[np.array] = None, **kwargs) -> None:
-        if keys is None:
-            for name in names:
-                self.create_child(name, t, **kwargs)
-        else:
-            if len(names) != len(keys):
-                raise ValueError(f"Length of names and keys must be the same")
+    def create_child_level(self, names: List[str], t: Index, loc: str, keys: List[np.array] = None, **kwargs) -> None:
+        if loc == "":
+            if keys is None:
+                for name in names:
+                    self.create_child(name, t, **kwargs)
             else:
-                for name, key in zip(names, keys):
-                    self.create_child(name, t, key = key, **kwargs)
+                if len(names) != len(keys):
+                    raise ValueError(f"Length of names and keys must be the same")
+                else:
+                    for name, key in zip(names, keys):
+                        self.create_child(name, t, key = key, **kwargs)
+        else:
+            loc_list = loc.split("-")
+            child_name = loc_list[0].strip()
+            if child_name not in self.children:
+                raise ValueError(f"Child {child_name} does not exist")
+            else:
+                self.children[child_name].create_child_level(names, t, "-".join(loc_list[1:]), keys, **kwargs)
 
     def __len__(self) -> int:
         """Returns the number of children indices in the index"""
@@ -139,9 +169,7 @@ class RootIndex(InnerIndex):
         with open(f"{name}.pkl", "rb") as f:
             return pickle.load(f)
         
-        
-        
-
+    
     
 class LeafIndex(SearchableIndex):
 
@@ -156,17 +184,17 @@ class LeafIndex(SearchableIndex):
         pass
 
     @abstractmethod
-    def insert_all(self, items: List[BaseEntry], loc: str = "") -> None:
+    def insert_all(self, items: List[BaseEntry], loc: str) -> None:
         """Inserts a list of new vectors into the index"""
         pass
 
     @abstractmethod
-    def delete(self, metadata: dict) -> None:
+    def delete(self, metadata: dict, loc: str) -> None:
         """Deletes a vector from the index"""
         pass
 
     @abstractmethod
-    def get_ids(self) -> List[str]:
+    def get_ids(self) -> List[dict]:
         """Returns a list of ids of the vectors in the index"""
         pass
 

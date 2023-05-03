@@ -14,7 +14,7 @@ class FlatRootIndex(RootIndex):
         self.children = dict()
         self.max_children = max_children
     
-    def search(self, query: np.array, k: int = 5) -> Tuple[str, List[List[BaseEntry]], np.array]:
+    def search(self, query: np.array, k: int = 5) -> Tuple[str, List[BaseEntry], np.array]:
         """Returns a list of k nearest neighbors and their distances to the query point"""
 
         if len(self.children) == 0:
@@ -33,3 +33,4 @@ class FlatRootIndex(RootIndex):
     
     def __str__(self) -> str:
         return f"FlatRootIndex(name = {self.name}, num_children = {len(self)})"
+    

@@ -8,6 +8,8 @@ __all__ = [
     "FlatRootIndex",
     "SVMRootIndex",
     "HNSWLeafIndex",
+    "FlatLeafIndex",
+    "SVMLeafIndex",
     "BaseEntry",
     "HuggingFaceEmbeddings"
 ]
