@@ -161,7 +161,7 @@ class RootIndex(InnerIndex):
         return schema
     
     def save_to_disk(self) -> None:
-        with open(f"{self.name}.pkl", "wb") as f:
+        with open(f"/databases/{self.name}.pkl", "wb") as f:
             pickle.dump(self, f)
 
     @classmethod
