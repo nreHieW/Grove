@@ -28,8 +28,8 @@ There are 2 types of Root Indices - `SVMRootIndex` and `FlatRootIndex` and they 
 6. `delete(self, metadata: dict, loc: str) -> None:` deletes the item given a metadata. If `BaseEntry` is provided for metadata, delete the associated entry in the database.
 7. `search(self, query: np.array, k: int = 5) -> Tuple[str, List[BaseEntry], np.array]:` searches for the top k data points with the given `query`. Returns a tuple of (location of the leaf node the results are from, the top K results, and an array of distances). 
 8. `get_schema(self) -> str:` returns a formatted string of the database structure. 
-9. `save_to_disk(self) -> None:` pickles the database to disk
-10. `load_from_disk(cls, name: str) -> "RootIndex":` loads the database to disk. Currently does not check if the loading `Index` is the same type as the calling `Index`.
+9. `save_to_disk(self, safe_path: str) -> None:` pickles the database to disk
+10. `load_from_disk(cls, name: str, safe_path: str) -> "RootIndex":` loads the database to disk. Currently does not check if the loading `Index` is the same type as the calling `Index`.
 
 
 ### Inner Indices 

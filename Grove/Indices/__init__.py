@@ -5,6 +5,7 @@ from Grove.Indices.Root.svm_root import SVMRootIndex
 from Grove.Indices.Leaf.hnsw_leaf import HNSWLeafIndex
 from Grove.Indices.Leaf.flat_leaf import FlatLeafIndex
 from Grove.Indices.Leaf.svm_leaf import SVMLeafIndex
+from Grove.Indices.index import Index, RootIndex, InnerIndex, LeafIndex
 
 __all__ = [
     "FlatInnerIndex",
@@ -13,5 +14,9 @@ __all__ = [
     "SVMRootIndex",
     "HNSWLeafIndex",
     "FlatLeafIndex",
-    "SVMLeafIndex"
+    "SVMLeafIndex",
+    "Index",
+    "RootIndex",
+    "InnerIndex",
+    "LeafIndex",
 ]

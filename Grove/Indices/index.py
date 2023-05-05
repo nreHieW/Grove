@@ -51,7 +51,7 @@ class InnerIndex(Index):
 
     def insert(self, item: BaseEntry, loc: str) -> None:
         """Inserts a new vector into the index"""
-        if not loc:
+        if loc == None:
             raise ValueError(f"Location must be provided. Provide empty string for current index")
         else:
             loc_list = loc.split("-")
@@ -93,6 +93,7 @@ class InnerIndex(Index):
     def delete_child(self, loc: str) -> None:
         """Deletes a child index from the index"""
         child_name = loc.split("-")[0].strip()
+        loc = "-".join(loc.split("-")[1:])
         if loc == "":
             if child_name not in self.children:
                 raise ValueError(f"Child {child_name} does not exist")
@@ -160,13 +161,13 @@ class RootIndex(InnerIndex):
 
         return schema
     
-    def save_to_disk(self) -> None:
-        with open(f"/databases/{self.name}.pkl", "wb") as f:
+    def save_to_disk(self, save_path: str) -> None:
+        with open(f"{save_path}/{self.name}.pkl", "wb") as f:
             pickle.dump(self, f)
 
     @classmethod
-    def load_from_disk(cls, name: str) -> "RootIndex":
-        with open(f"{name}.pkl", "rb") as f:
+    def load_from_disk(cls, name: str, save_path: str) -> "RootIndex":
+        with open(f"{save_path}/{name}.pkl", "rb") as f:
             return pickle.load(f)
         
     
