@@ -10,7 +10,7 @@ from fastapi import FastAPI, Request, HTTPException, Response
 from typing import List, Dict
 from Grove.Indices import *
 from Grove.Entry import BaseEntry
-from Grove.Extras import HuggingFaceEmbeddings
+from Grove.Extras import HuggingFaceLocal
 from api_keys import HUGGINGFACEHUB_API_TOKEN2, HUGGINGFACEHUB_API_TOKEN3
 from config import MODEL_CACHE_TIMEOUT, MODEL_CACHE_CLEANUP_INTERVAL, DATABASE_TYPES
 
@@ -20,7 +20,7 @@ DATABASE_NAMES = []
 TEMP_FOLDER = tempfile.mkdtemp()
 SAVE_PATH = "databases"
 
-hf_embeddings = HuggingFaceEmbeddings([HUGGINGFACEHUB_API_TOKEN2, HUGGINGFACEHUB_API_TOKEN3])
+hf_embeddings = HuggingFaceLocal()
 
 # utils
 def cleanup_model_cache():
