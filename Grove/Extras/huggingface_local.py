@@ -2,7 +2,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 
 class HuggingFaceLocal:
-    def __init__(self, tokens) -> None:
+    def __init__(self) -> None:
         model_name = "sentence-transformers/all-mpnet-base-v1"
         self.model = SentenceTransformer(model_name)
     

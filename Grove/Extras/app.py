@@ -7,6 +7,7 @@ import shutil
 import sys
 import numpy as np
 from fastapi import FastAPI, Request, HTTPException, Response
+from sentence_transformers import CrossEncoder
 from typing import List, Dict
 from Grove.Indices import *
 from Grove.Entry import BaseEntry
@@ -21,6 +22,7 @@ TEMP_FOLDER = tempfile.mkdtemp()
 SAVE_PATH = "databases"
 
 hf_embeddings = HuggingFaceLocal()
+encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
 # utils
 def cleanup_model_cache():
@@ -65,6 +67,8 @@ app = FastAPI()
 def update_database_names():
     global DATABASE_NAMES
     folder_path = SAVE_PATH
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
     pickle_files = [f for f in os.listdir(folder_path) if f.endswith('.pkl')]
     DATABASE_NAMES = [f.split('.')[0] for f in pickle_files]
     DATABASE_NAMES = list(set(DATABASE_NAMES + list(LOADED_DATABASES.keys()))) # New databases
@@ -133,7 +137,7 @@ async def get_all_items(root_name: str, loc: str) :
     
 @app.get("/search")
 async def search(root_name: str, query: str, k: int = 10, loc: str = "") :
-    query = hf_embeddings(query)
+    query_vec = hf_embeddings(query)
     root = get_database_or_load(root_name)
     try:
         if loc != "":
@@ -141,7 +145,10 @@ async def search(root_name: str, query: str, k: int = 10, loc: str = "") :
                 curr = loc.split("-")[0]
                 loc = loc.split("-")[1:]
                 root = root.children[curr]
-        path, results, distances = root.search(query, k = k)
+        if isinstance(root, CrossEncoderRootIndex):
+            path, results, distances = root.search(query=query_vec, k=k, encoder=encoder, query_str=query) 
+        else:
+            path, results, distances = root.search(query_vec, k = k)
         distances = [float(dist) for dist in distances]
         results = [str(result.metadata["content"]) for result in results]
         return {
@@ -226,7 +233,7 @@ async def delete_child(root_name: str, loc: str):
 
 
 @app.post("/create_database")
-async def create_database(name: str, max_children: int = 1000, root_type: str = "Flat") :
+async def create_database(name: str, max_children: int = 1000, root_type: str = "CrossEncoder") :
     '''Creates a new database with the specified name'''
 
     if name in DATABASE_NAMES:

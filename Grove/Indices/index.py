@@ -131,7 +131,7 @@ class InnerIndex(Index):
                     raise ValueError(f"Length of names and keys must be the same")
                 else:
                     for name, key in zip(names, keys):
-                        self.create_child(name, t, key = key, **kwargs)
+                        self.create_child(name, t, key = key, loc = loc, **kwargs)
         else:
             loc_list = loc.split("-")
             child_name = loc_list[0].strip()

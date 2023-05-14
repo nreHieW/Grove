@@ -5,6 +5,7 @@ DATABASE_TYPES = {
     "root": {
         "Flat": FlatRootIndex,
         "SVM": SVMRootIndex,
+        "CrossEncoder": CrossEncoderRootIndex,
     }, 
     "inner": {
         "Flat": FlatInnerIndex,

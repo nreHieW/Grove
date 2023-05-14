@@ -19,7 +19,7 @@ Locations in `Grove` are specified in the following syntax: `A-B-C` where `B` is
 To access a inner node directly, use the following syntax: `parent.children["child_name"]`.
 
 ### Root Indices 
-There are 2 types of Root Indices - `SVMRootIndex` and `FlatRootIndex` and they support the following methods. These indices form the base of every database in `Grove`.
+There are 2 types of Root Indices - `SVMRootIndex`, `FlatRootIndex`, `CrossEncoderRootIndex` and they support the following methods. These indices form the base of every database in `Grove`.
 1. `insert(self, item: BaseEntry, loc: str) -> None:` inserts a `BaseEntry` into the specified location of the database.
 2. `insert_all(self, items: List[BaseEntry], loc: str) -> None:` inserts a list of `BaseEntries` into the specified location. This is the same as calling `insert()` on each item of the list.
 3. `create_child(self, new_child_name, t:Index, loc: str, **kwargs) -> None:` creates a child at the specified location with the given `child_name` and `Index` type with the provided `kwargs`. Provide empty string to create child at the current `Index`. 

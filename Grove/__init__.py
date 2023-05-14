@@ -7,6 +7,7 @@ __all__ = [
     "SVMInnerIndex",
     "FlatRootIndex",
     "SVMRootIndex",
+    "CrossEncoderRootIndex",
     "HNSWLeafIndex",
     "FlatLeafIndex",
     "SVMLeafIndex",

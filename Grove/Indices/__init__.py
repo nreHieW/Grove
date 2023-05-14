@@ -2,6 +2,7 @@ from Grove.Indices.Inner.flat_inner import FlatInnerIndex
 from Grove.Indices.Inner.svm_inner import SVMInnerIndex
 from Grove.Indices.Root.flat_root import FlatRootIndex
 from Grove.Indices.Root.svm_root import SVMRootIndex
+from Grove.Indices.Root.crossencoder_root import CrossEncoderRootIndex
 from Grove.Indices.Leaf.hnsw_leaf import HNSWLeafIndex
 from Grove.Indices.Leaf.flat_leaf import FlatLeafIndex
 from Grove.Indices.Leaf.svm_leaf import SVMLeafIndex
@@ -12,6 +13,7 @@ __all__ = [
     "SVMInnerIndex",
     "FlatRootIndex",
     "SVMRootIndex",
+    "CrossEncoderRootIndex",
     "HNSWLeafIndex",
     "FlatLeafIndex",
     "SVMLeafIndex",
