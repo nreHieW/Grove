@@ -17,7 +17,21 @@ class CrossEncoderRootIndex(RootIndex):
         self.max_children = max_children
 
     def search(self, query: np.array, k: int = 5, encoder: CrossEncoder = None, query_str: str = None) -> Tuple[str, List[BaseEntry], np.array]:
-        """Returns a list of k nearest neighbors and their distances to the query point"""
+        """
+        Searches the index for the k nearest neighbors of the query vector.
+
+        Args:
+            query: A numpy array representing the query vector.
+            k: An integer representing the number of nearest neighbors to return.
+            encoder: A CrossEncoder model to use for determining the most relevant child.
+            query_str: A string representing the query to use for determining the most relevant child.
+        
+        Returns:
+            A tuple containing:
+                - A string representing the location of the index that was searched.
+                - A list of BaseEntry objects representing the k nearest neighbors.
+                - A numpy array representing the similarities of the k nearest neighbors.
+        """
         if encoder is None:
             raise ValueError(f"CrossEncoder model must be provided")
         if query_str is None:

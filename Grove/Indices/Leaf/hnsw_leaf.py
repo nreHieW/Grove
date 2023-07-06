@@ -46,7 +46,19 @@ class HNSWLeafIndex(LeafIndex):
         self.index.init_index(max_elements = max_children, ef_construction = ef_construction, M = m, allow_replace_deleted = True)
 
     def search(self, query: np.array, k: int = 5) -> Tuple[str, List[BaseEntry], np.array]:
-        """Returns a list of k nearest neighbors and their distances to the query point"""
+        """
+        Searches the index for the k nearest neighbors of the query vector.
+
+        Args:
+            query: A numpy array representing the query vector.
+            k: An integer representing the number of nearest neighbors to return.
+        
+        Returns:
+            A tuple containing:
+                - A string representing the location of the index that was searched.
+                - A list of BaseEntry objects representing the k nearest neighbors.
+                - A numpy array representing the similarities of the k nearest neighbors.
+        """
         if not self.is_searchable():
             raise ValueError(f"Index is not searchable, set key first")
 
@@ -70,7 +82,13 @@ class HNSWLeafIndex(LeafIndex):
         return "", query_res, distances
 
     def insert(self, item: BaseEntry, loc: str) -> None:
-        """Inserts a new vector into the index"""
+        """
+        Inserts a new vector into the index.
+
+        Args:
+            item: A BaseEntry object representing the vector to be inserted.
+            loc: A string representing the location of the index to insert the vector.
+        """
 
         if loc != "": # Must be empty string since it is a leaf node
             raise ValueError(f"Location is {loc} but expected leaf")
@@ -85,7 +103,13 @@ class HNSWLeafIndex(LeafIndex):
         self.curr_count += 1
     
     def insert_all(self, items: List[BaseEntry], loc: str = "") -> None:
-        """Inserts a list of vectors into the index"""
+        """
+        Deletes a vector from the index.
+
+        Args:
+            metadata: A dictionary representing the metadata of the vector to be deleted.
+            loc: A string representing the location of the index to delete the vector.
+        """
         if loc != "":
             raise ValueError(f"Location is {loc} but expected leaf")
         
@@ -100,6 +124,13 @@ class HNSWLeafIndex(LeafIndex):
         self.index.add_items(np.array([item.data for item in items]), ids = np.asarray(int_labels), replace_deleted = True)
 
     def delete(self, metadata: dict, loc: str) -> None:
+        """
+        Deletes a vector from the index.
+
+        Args:
+            metadata: A dictionary representing the metadata of the vector to be deleted.
+            loc: A string representing the location of the index to delete the vector.
+        """
         if loc != "":
             raise ValueError(f"Location is {loc} but expected leaf")
         if isinstance(metadata, BaseEntry):
@@ -111,6 +142,9 @@ class HNSWLeafIndex(LeafIndex):
                 return
     
     def delete_all(self) -> None:
+        """
+        Deletes all vectors from the index.
+        """
         self.index = hnswlib.Index(space = 'l2', dim = self.dim)
         self.curr_count = 0
         self.index.init_index(max_elements = self.max_children, ef_construction = self.ef_construction, M = self.m, allow_replace_deleted = True)
@@ -118,6 +152,12 @@ class HNSWLeafIndex(LeafIndex):
 
 
     def get_ids(self) -> List[dict]:
+        """
+        Returns the metadata of all the vectors in the index.
+
+        Returns:
+            A list of dictionaries representing the metadata of the vectors in the index.
+        """
         return list(self.labels_mapping.values())
 
     def __len__(self) -> int:

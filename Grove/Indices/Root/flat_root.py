@@ -15,7 +15,19 @@ class FlatRootIndex(RootIndex):
         self.max_children = max_children
     
     def search(self, query: np.array, k: int = 5) -> Tuple[str, List[BaseEntry], np.array]:
-        """Returns a list of k nearest neighbors and their distances to the query point"""
+        """
+        Searches the index for the k nearest neighbors of the query vector.
+
+        Args:
+            query: A numpy array representing the query vector.
+            k: An integer representing the number of nearest neighbors to return.
+        
+        Returns:
+            A tuple containing:
+                - A string representing the location of the index that was searched.
+                - A list of BaseEntry objects representing the k nearest neighbors.
+                - A numpy array representing the similarities of the k nearest neighbors.
+        """
 
         if len(self.children) == 0:
             raise ValueError(f"Index is empty, add children first")

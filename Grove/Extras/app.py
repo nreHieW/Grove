@@ -49,6 +49,8 @@ def cleanup_model_cache():
 
 def get_database_or_load(name: str) -> RootIndex:
     if name not in LOADED_DATABASES:
+        if not os.path.exists(f"{SAVE_PATH}/{name}.pkl"):
+            raise HTTPException(status_code=400, detail="Database does not exist, please create it first")
         # Load the database from disk
         root = RootIndex.load_from_disk(name, SAVE_PATH)
         LOADED_DATABASES[name] = (root, time.time())
@@ -136,7 +138,7 @@ async def get_all_items(root_name: str, loc: str) :
         return HTTPException(status_code=400, detail="Database does not exist, please create it first")
     
 @app.get("/search")
-async def search(root_name: str, query: str, k: int = 10, loc: str = "") :
+async def search(root_name: str, query: str, k: int = 10, loc: str = "", softmax: bool = True) :
     query_vec = hf_embeddings(query)
     root = get_database_or_load(root_name)
     try:
@@ -146,22 +148,33 @@ async def search(root_name: str, query: str, k: int = 10, loc: str = "") :
                 loc = loc.split("-")[1:]
                 root = root.children[curr]
         if isinstance(root, CrossEncoderRootIndex):
-            path, results, distances = root.search(query=query_vec, k=k, encoder=encoder, query_str=query) 
+            path, results, distances = root.search(query=query_vec, k=k * 2, encoder=encoder, query_str=query) 
         else:
-            path, results, distances = root.search(query_vec, k = k)
+            path, results, distances = root.search(query_vec, k = k * 2)
         distances = [float(dist) for dist in distances]
         results = [str(result.metadata["content"]) for result in results]
+
+        # use cross encoder to rerank
+        scores = encoder.predict([(query, result) for result in results])
+        results, distances = zip(*sorted(zip(results, scores), key=lambda x: x[1], reverse=True))
+
+        distances = np.array(distances)
+        # Soft max the distances
+        if softmax:
+            distances = np.exp(distances) / np.sum(np.exp(distances))  
+        distances = distances.tolist()
+
         return {
             "path": path,
-            "results": results,
-            "distances": distances,
+            "results": results[:k],
+            "distances": distances[:k],
         }
     except Exception as e:
         return HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/insert")
-async def insert_entry(root_name: str, item: str, metadata: dict, loc: str = "") :
+async def insert_entry(root_name: str, item: str, metadata: dict ={}, loc: str = "") :
     '''Inserts a new item into the database'''
 
     vector = hf_embeddings(item)
@@ -271,6 +284,7 @@ async def delete_database(name: str) :
                 update_database_names()
     
     del LOADED_DATABASES[name]
+    update_database_names()
 
     # Return status and undo command
     return {

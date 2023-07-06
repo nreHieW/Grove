@@ -30,7 +30,19 @@ class SVMLeafIndex(LeafIndex):
         self.data_items = []
 
     def search(self, query: np.array, k: int = 5) -> Tuple[str, List[BaseEntry], np.array]:
-        """Returns a list of k nearest neighbors and their distances to the query point"""
+        """
+        Searches the index for the k nearest neighbors of the query vector.
+
+        Args:
+            query: A numpy array representing the query vector.
+            k: An integer representing the number of nearest neighbors to return.
+        
+        Returns:
+            A tuple containing:
+                - A string representing the location of the index that was searched.
+                - A list of BaseEntry objects representing the k nearest neighbors.
+                - A numpy array representing the similarities of the k nearest neighbors.
+        """
         if not self.is_searchable():
             raise ValueError(f"Index is not searchable, set key first")
 
@@ -57,7 +69,13 @@ class SVMLeafIndex(LeafIndex):
         return "", [self.data_items[i - 1] for i in sorted_ix[1:k+1]], similarities[sorted_ix[1:k+1]]
 
     def insert(self, item: BaseEntry, loc: str) -> None:
-        """Inserts a new vector into the index"""
+        """
+        Inserts a new vector into the index.
+
+        Args:
+            item: A BaseEntry object representing the vector to be inserted.
+            loc: A string representing the location of the index to insert the vector.
+        """
         if loc != "": # Must be empty string since it is a leaf node
             raise ValueError(f"Location is {loc} but expected leaf")
 
@@ -70,7 +88,13 @@ class SVMLeafIndex(LeafIndex):
         self.data_items.append(item)
 
     def insert_all(self, items: List[BaseEntry], loc: str = "") -> None:
-        """Inserts a list of vectors into the index"""
+        """
+        Inserts a list of vectors into the index.
+
+        Args:
+            items: A list of BaseEntry objects representing the vectors to be inserted.
+            loc: A string representing the location of the index to insert the vectors.
+        """
         if loc != "":
             raise ValueError(f"Location is {loc} but expected leaf")
         
@@ -82,6 +106,13 @@ class SVMLeafIndex(LeafIndex):
             self.data_items.append(item)
 
     def delete(self, metadata: dict, loc: str) -> None:
+        """
+        Deletes a vector from the index.
+
+        Args:
+            metadata: A dictionary representing the metadata of the vector to be deleted.
+            loc: A string representing the location of the index to delete the vector.
+        """
         if loc != "":
             raise ValueError(f"Location is {loc} but expected leaf")
         if isinstance(metadata, BaseEntry):
@@ -92,9 +123,18 @@ class SVMLeafIndex(LeafIndex):
                 return
     
     def delete_all(self) -> None:
+        """
+        Deletes all vectors from the index.
+        """
         self.data_items = []
        
     def get_ids(self) -> List[dict]:
+        """
+        Returns the metadata of all the vectors in the index.
+
+        Returns:
+            A list of dictionaries representing the metadata of the vectors in the index.
+        """
         return [item.metadata for item in self.data_items]
 
     def __len__(self) -> int:
